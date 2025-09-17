@@ -1,0 +1,12 @@
+| File                      | Responsibility                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `helix_firmware.ino`      | Main loop that calls motion/sensor/comms update functions. Handles timing and orchestrates state.            |
+| `config.h`                | Constants like baud rate, robot dimensions, encoder ticks/rev, update rate                                   |
+| `pins.h`                  | Pin definitions for motors, sensors, LEDs                                                                    |
+| `motion/motor_driver.*`   | Sets PWM, direction, and braking for each motor. Handles velocity commands.                                  |
+| `motion/odometry.*`       | Encoder tick counting (interrupts), velocity computation, pose integration                                   |
+| `sensors/imu.*`           | Interfaces with WT901 MPU (likely via Serial or I2C) to get orientation data                                 |
+| `sensors/ultrasonic.*`    | Measures distances from ME007YS sensors and averages out noise                                               |
+| `sensors/leds.*`          | Drives WS2812B strips with status patterns using `Adafruit_NeoPixel`                                         |
+| `comms/serial_protocol.*` | Encodes/decodes UART packets to/from Pi. Includes checksums, command parsing, structured response generation |
+| `README.md`               | Wiring overview, expected serial protocol format, setup instructions                                         |
