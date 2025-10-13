@@ -5,10 +5,15 @@
 
 
 void setup(){
-    init_config();
+    enc_begin();
+    Serial.begin(115200);
+    
 
 }
 
 void loop(){
+
+
+
 
 }

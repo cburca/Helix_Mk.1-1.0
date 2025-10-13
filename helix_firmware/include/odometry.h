@@ -12,6 +12,7 @@
         - Total Displacement
         - Orientation
 */
+#include "pins.h"
 
 #ifndef odometry.h
 #define odometry.h
@@ -51,5 +52,9 @@ void handleLeftEncoderA();
 void handleLeftEncoderB();
 void handleRightEncoderA();
 void handleRightEncoderB();
+
+// Confirm wheel FINAL diameter
+extern Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, 0.096, 1440);
+extern Odometry rightOdom(RIGHT_ENC_A, RIGHT_ENC_B, 0.096, 1440);
 
 #endif

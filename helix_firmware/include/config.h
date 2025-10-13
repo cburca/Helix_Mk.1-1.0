@@ -4,7 +4,7 @@
 #include "odometry.h"
 
 
-void init_config(){
+void enc_begin(){
     // Left Enc
     attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A), handleLeftEncoderA, CHANGE);
     attachInterrupt(digitalPinToInterrupt(LEFT_ENC_B), handleLeftEncoderB, CHANGE);
