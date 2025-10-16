@@ -1,7 +1,6 @@
 #include "Arduino.h"
 #include "pins.h"
 #include "odometry.h"
-#include "config.h"
 
 
 // Create odometry objects
