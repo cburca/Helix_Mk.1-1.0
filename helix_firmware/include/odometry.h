@@ -25,14 +25,19 @@ public:
     Odometry(uint8_t encA, uint8_t encB, float wheelDiameter, int countsPerRev);
 
     void begin();               // Set up interrupts or pin modes
-    void update();              // Called in main loop or timer ISR
     float getVelocity(float dt); // Returns angular velocity (rad/s)
+    float getLinearVelocity(float dt); // Returns linear velocity (m/s)
     float getDistance();        // Returns total distance traveled (m)
+    void update();          // Optional for rn, use later for pre-calcualting & storing pose estimates & velocities
     void reset();               // Reset tick counter
 
+    // Methods to grab stored pose/vel data from update function once used
+    float getStoredAngularVelocity() const { return _angularVelocity; }
+    float getStoredLinearVelocity() const { return _linearVelocity; }
+
     // Getters (for ISR access and external use)
-    int getEncA() const { return _encA; }
-    int getEncB() const { return _encB; }
+    uint8_t getEncA() const { return _encA; }
+    uint8_t getEncB() const { return _encB; }
     long getTicks() const { return _ticks; }
 
     // ISR helper — updates ticks safely
@@ -45,16 +50,12 @@ private:
     unsigned long _lastUpdateTime;
     float _wheelDiameter;
     int _countsPerRev;
+    float _angularVelocity = 0.0f;
+    float _linearVelocity = 0.0f;
 };
 
 // Global ISR handlers (if using attachInterrupt)
-void handleLeftEncoderA();
-void handleLeftEncoderB();
-void handleRightEncoderA();
-void handleRightEncoderB();
-
-// Confirm wheel FINAL diameter
-extern Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, 0.096, 1440);
-extern Odometry rightOdom(RIGHT_ENC_A, RIGHT_ENC_B, 0.096, 1440);
+void leftEncoderISR();
+void rightEncoderISR();
 
 #endif
