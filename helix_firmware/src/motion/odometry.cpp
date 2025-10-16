@@ -51,6 +51,7 @@ void Odometry::reset() {
 }
 
 // --- Upodate --- //
+// For later also include Pose Estimates (x, y, theta)
 void Odometry::update() {
     unsigned long now = micros();
     float dt = (now - _lastUpdateTime) / 1e6; // seconds

@@ -8,3 +8,42 @@
 // ROS Interface (future)
 // - Teensy publishes IMU data over UART to the Pi.
 // - ROS driver/subscriber translates it into sensor_msgs/Imu and geometry_msgs/Vector3 topics.
+
+
+#ifndef IMU_H
+#define IMU_H
+
+#include <Arduino.h>
+
+struct IMUData {
+    float accelX, accelY, accelZ;  // m/s²
+    float gyroX, gyroY, gyroZ;     // °/s
+    float roll, pitch, yaw;        // degrees
+};
+
+class IMU {
+public:
+    IMU(HardwareSerial &serialPort);
+    void begin(uint32_t baud = 9600);
+    void update();
+    IMUData getData() const;
+
+private:
+    HardwareSerial &imuSerial;
+    IMUData data;
+
+    static const uint8_t PACKET_HEADER = 0x55;
+    static const uint8_t PACKET_LEN = 11;
+
+    enum PacketType {
+        ACCEL = 0x51,
+        GYRO  = 0x52,
+        ANGLE = 0x53
+    };
+
+    bool readPacket(uint8_t *buffer);
+    bool validateChecksum(const uint8_t *buffer);
+    void parsePacket(const uint8_t *buffer);
+};
+
+#endif
