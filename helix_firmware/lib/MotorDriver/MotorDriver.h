@@ -1,7 +1,7 @@
 // Disable motor enable pins when e-stop interrupts - provides motor braking
 
-#ifndef motor_driver.h
-#define motor_driver.h
+#ifndef MOTOR_DRIVER_H
+#define MOTOR_DRIVER_H
 
 #include <Arduino.h>    
 

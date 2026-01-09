@@ -10,7 +10,8 @@
 // - UART RX (<- Pi)
 // - IMU (x1 UART TX to Teensy) - Polling
 
-
+#ifndef PINS_H
+#define PINS_H
 
 //* LED Strip *//
 
@@ -72,3 +73,6 @@
 #define TEENSY2PI_RX
 
 #define WT901_UART_RX
+
+
+#endif

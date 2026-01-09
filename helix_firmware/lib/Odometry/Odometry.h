@@ -12,11 +12,10 @@
         - Total Displacement
         - Orientation
 */
+#ifndef ODOMETRY_H
+#define ODOMETRY_H
+
 #include "pins.h"
-
-#ifndef odometry.h
-#define odometry.h
-
 #include <Arduino.h>
 
 class Odometry {

@@ -1,4 +1,4 @@
-#include "leds.h"
+#include "LEDs.h"
 #include "pins.h"  // for NUM_LEDS, LED_STRIP_F, LED_STRIP_R
 #include <Arduino.h>  // for delay()
 

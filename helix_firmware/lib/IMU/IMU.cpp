@@ -1,4 +1,4 @@
-#include "imu.h"
+#include "IMU.h"
 
 IMU::IMU(HardwareSerial &serialPort) : imuSerial(serialPort) {
     data = {0, 0, 0, 0, 0, 0, 0, 0, 0};
