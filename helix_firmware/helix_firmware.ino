@@ -2,6 +2,7 @@
 #include "pins.h"
 #include "odometry.h"
 
+// TEST MESSAGE //
 
 // Create odometry objects
 Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, 0.096, 1440);   // wheel diameter = 96 mm
@@ -62,19 +63,19 @@ void loop() {
         Serial.print("Ticks [L,R]: ");
         Serial.print(leftOdom.getTicks()); Serial.print(", ");
         //Serial.println(rightOdom.getTicks());
-
+        delay(100);
         Serial.print("Distance [m] [L,R]: ");
         Serial.print(leftDist, 5); Serial.print(", ");
         //Serial.println(rightDist, 5);
-
+        delay(100);
         Serial.print("Angular Vel [rad/s] [L,R]: ");
         Serial.print(leftAngVel, 3); Serial.print(", ");
         //Serial.println(rightAngVel, 3);
-
+        delay(100);
         Serial.print("Linear Vel [m/s] [L,R]: ");
         Serial.print(leftLinVel, 3); Serial.print(", ");
         //Serial.println(rightLinVel, 3);
-
+        delay(100);
         Serial.println("-----------------------------\n");
     }
 }
