@@ -13,7 +13,10 @@
 #ifndef PINS_H
 #define PINS_H
 
-//* LED Strip *//
+#include <Arduino.h>
+
+#define UART_RX 0 //RX1 line
+#define UART_TX 1 //TX1 line
 
 #define LED_STRIP_F 2
 #define LED_STRIP_R 3

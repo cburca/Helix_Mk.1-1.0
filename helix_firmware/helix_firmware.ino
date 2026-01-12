@@ -1,11 +1,13 @@
 #include <Arduino.h>
+#include "Odometry.h"
 #include "pins.h"
-#include "odometry.h"
+#include "uart.h"
+
 
 // TEST MESSAGE //
 
 // Create odometry objects
-Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, 0.096, 1440);   // wheel diameter = 96 mm
+Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, 0.160, MOTOR_CPR*GEAR_RATIO);   // wheel diameter = 96 mm
 //Odometry rightOdom(RIGHT_ENC_A, RIGHT_ENC_B, 0.096, 1440);
 
 // --- ISR handlers ---
@@ -32,7 +34,7 @@ void setup() {
     leftOdom.begin();
     //rightOdom.begin();
 
-    attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A), leftEncoderISR, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A), leftEncoderISR, CHANGE);     // NEED TO FIX! ATTACH FOR LEFT_ENC_B as welll
     //attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_A), rightEncoderISR, CHANGE);
 
     Serial.println("Encoders ready. Rotate wheels or run motors.");

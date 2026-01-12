@@ -1,7 +1,7 @@
 /* ** WHEEL ENCODER HANDLING **
  - Provide wheel velocity and other position-related perameters 
  - Have  signals: ENC_A and ENC_B - 90 degrees out of phase w/1440 pulses per rev
-   360 quadrature cycles x 4 edges per cycle, Resolution = 360/1440 = 0.25deg per count
+   60:1 gearbox, so counts per wheel rev = 1440 x 60 = 86,400 ticks
  - Read encoder pulses from both motors
     - Track: 
         - ∆ticks over time 
@@ -17,6 +17,10 @@
 
 #include "pins.h"
 #include <Arduino.h>
+
+
+const int MOTOR_CPR = 1440;
+const int GEAR_RATIO = 60;
 
 class Odometry {
 public:
@@ -51,6 +55,7 @@ private:
     int _countsPerRev;
     float _angularVelocity = 0.0f;
     float _linearVelocity = 0.0f;
+    long _prevTicks;
 };
 
 // Global ISR handlers (if using attachInterrupt)

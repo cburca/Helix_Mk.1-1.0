@@ -1,10 +1,9 @@
 #include "Odometry.h"
-#include "pins.h"
 
 // --- Constructor ---
 Odometry::Odometry(uint8_t encA, uint8_t encB, float wheelDiameter, int countsPerRev)
     : _encA(encA), _encB(encB), _wheelDiameter(wheelDiameter), _countsPerRev(countsPerRev),
-      _ticks(0), _lastState(0), _lastUpdateTime(0) {}
+      _ticks(0), _prevTicks(0), _lastState(0), _lastUpdateTime(0) {}
 
 // --- Setup ---
 void Odometry::begin() {
@@ -28,7 +27,6 @@ float Odometry::getDistance() {
 
 // --- Velocity Calculation ---
 float Odometry::getVelocity(float dt) {
-    static long prevTicks = 0;
     long currentTicks = _ticks;
     long deltaTicks = currentTicks - prevTicks;
     prevTicks = currentTicks;
