@@ -8,16 +8,18 @@
 class MotorDriver {
 public:
     // constructor
-    MotorDriver(uint8_t R_pwmPin, uint8_t L_pwmPin, uint8_t R_enPin, uint8_t L_enPin, uint8_t isPin);
+    MotorDriver(uint8_t R_pwmPin, uint8_t L_pwmPin, uint8_t R_enPin, uint8_t L_enPin);
 
     void begin();   // To initialize pins
-    void setSpeed(uint16_t speed); // -255 to +255 where negative is reverse direction
+    void setSpeed(int16_t speed); // -255 to +255 where negative is reverse direction
     void enable();
     void disable();
-    int readCurrent();  // Returns ADC reading or mA
+    //int readCurrent();  // Returns ADC reading or mA - not using just yet
+    bool enabled_getter();
+    void enabled_setter(bool state);
 
 private:
-    uint8_t _rpwm, _lpwm, _ren, _len, _is;
+    uint8_t _rpwm, _lpwm, _ren, _len/*, _is*/;
     bool _enabled;
 
 };

@@ -3,6 +3,14 @@
 
 #include <Adafruit_NeoPixel.h>
 
+#define NUM_LEDS 22  // Adjust this according to the number of LEDs per strip
+
+#define WHITE 255, 255, 255
+#define BLUE 0, 0, 255
+#define RED 255, 0, 0
+#define YELLOW 255, 255, 0
+#define OFF 0, 0, 0
+
 // A class to encapsulate LED behavior
 class LedController {
 public:
@@ -13,7 +21,8 @@ public:
     void normalOperation();    // Normal running pattern
     void handleObstacle();     // Obstacle response
 
-    void setObstacleDetected(bool state);
+    void setObstacleDetected(bool state);   // Setter
+    bool getObstacleDetected(void) const {return obstacleDetected;};   // Getter
 
 private:
     Adafruit_NeoPixel frontStrip;

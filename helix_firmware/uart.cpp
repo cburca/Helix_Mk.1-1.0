@@ -26,7 +26,7 @@ void UARTInterface::sendPacket(PacketType type, const uint8_t *payload, uint8_t 
   serial_.write((uint8_t)type);
   serial_.write(length);
 
-  serial_.write(payload, length)
+  serial_.write(payload, length);
 
   uint8_t crc = computeCRC(payload, length)
 

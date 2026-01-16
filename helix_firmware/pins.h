@@ -15,18 +15,8 @@
 
 #include <Arduino.h>
 
-#define UART_RX 0 //RX1 line
-#define UART_TX 1 //TX1 line
-
 #define LED_STRIP_F 2
 #define LED_STRIP_R 3
-#define NUM_LEDS 22  // Adjust this according to the number of LEDs per strip
-
-#define WHITE 255, 255, 255
-#define BLUE 0, 0, 255
-#define RED 255, 0, 0
-#define YELLOW 255, 255, 0
-#define OFF 0, 0, 0
 
 //* E Stop *//
 
@@ -42,17 +32,17 @@
 
 //* Motor Drivers *//
 
-#define BTS7960_1_R_PWM
-#define BTS7960_1_L_PWM
-#define BTS7960_1_R_EN
-#define BTS7960_1_L_EN
+#define BTS7960_1_R_PWM 9
+#define BTS7960_1_L_PWM 10
+#define BTS7960_1_R_EN 11
+#define BTS7960_1_L_EN 12
 #define BTS7960_1_R_IS // May share both drive side current alarms
 #define BTS7960_1_L_IS
 
-#define BTS7960_2_R_PWM
-#define BTS7960_2_L_PWM
-#define BTS7960_2_R_EN
-#define BTS7960_2_L_EN
+#define BTS7960_2_R_PWM 13
+#define BTS7960_2_L_PWM 14
+#define BTS7960_2_R_EN 15
+#define BTS7960_2_L_EN 16
 #define BTS7960_2_R_IS // May share both drive side current alarms
 #define BTS7960_2_L_IS
 
@@ -72,8 +62,8 @@
 
 //* Comms *//
 
-#define TEENSY2PI_TX
-#define TEENSY2PI_RX
+#define UART_RX 0 //RX1 line
+#define UART_TX 1 //TX1 line
 
 #define WT901_UART_RX
 

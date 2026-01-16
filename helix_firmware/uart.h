@@ -28,6 +28,13 @@ enum PacketType : uint8_t {
   //PKT_LEDSTATE = 0x12
 };
 
+// THINGS NEEDED TO BE SENT IN ODOM PAYLOAD:
+// <timestamp>
+// <left_ticks>
+// <right_ticks>
+// <linear_velocity>
+// <angular_velocity>
+
 enum RxState {
   WAIT_SYNC1,
   WAIT_SYNC2,
@@ -46,7 +53,7 @@ class UARTInterface {
     void begin();
     void sendPacket(PacketType type, const uint8_t *payload, uint8_t length);
 
-    void processIncomingByte(uint8_t byte)
+    void processIncomingByte(uint8_t byte);
     void handlePacket(uint8_t type, uint8_t *payload, uint8_t length);
 
   private:

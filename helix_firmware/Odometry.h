@@ -1,7 +1,6 @@
 /* ** WHEEL ENCODER HANDLING **
  - Provide wheel velocity and other position-related perameters 
- - Have  signals: ENC_A and ENC_B - 90 degrees out of phase w/1440 pulses per rev
-   60:1 gearbox, so counts per wheel rev = 1440 x 60 = 86,400 ticks
+ - Have  signals: ENC_A and ENC_B - 90 degrees out of phase w/1440 pulses per rev AT THE WHEEL
  - Read encoder pulses from both motors
     - Track: 
         - ∆ticks over time 
@@ -11,6 +10,11 @@
         - Distance per wheel
         - Total Displacement
         - Orientation
+ - Max Expected linear velocity:
+    100rpm / 60 = 1.667 [rev/s]
+    Circumfrence = Pi * (160mm / 2)
+    v = 1.667 [rev/s] x 0.5027 [m/rev] = 0.84 m/s
+    So rough expected lin. vel. = 0.8-0.9 m/s
 */
 #ifndef ODOMETRY_H
 #define ODOMETRY_H
@@ -19,13 +23,13 @@
 #include <Arduino.h>
 
 
-const int MOTOR_CPR = 1440;
-const int GEAR_RATIO = 60;
+const int COUNTS_PER_REV = 1440;
+const float WHEEL_DIAMETER = 0.160;
 
 class Odometry {
 public:
     // Constructor
-    Odometry(uint8_t encA, uint8_t encB, float wheelDiameter, int countsPerRev);
+    Odometry(uint8_t encA, uint8_t encB, float wheelDiameter, int countsPerRev, int8_t direction);
 
     void begin();               // Set up interrupts or pin modes
     float getVelocity(float dt); // Returns angular velocity (rad/s)
@@ -44,7 +48,11 @@ public:
     long getTicks() const { return _ticks; }
 
     // ISR helper — updates ticks safely
-    void updateTicks(bool direction);
+    void updateTicks(int8_t delta);
+
+    // Global ISR handlers (if using attachInterrupt)
+    static void leftEncoderISR(void);
+    static void rightEncoderISR(void);
 
 private:
     uint8_t _encA, _encB;
@@ -56,10 +64,11 @@ private:
     float _angularVelocity = 0.0f;
     float _linearVelocity = 0.0f;
     long _prevTicks;
+    int8_t _dir;
 };
 
-// Global ISR handlers (if using attachInterrupt)
-void leftEncoderISR();
-void rightEncoderISR();
+extern Odometry leftOdom;
+extern Odometry rightOdom;
+
 
 #endif

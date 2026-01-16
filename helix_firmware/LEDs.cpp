@@ -1,5 +1,4 @@
 #include "LEDs.h"
-#include "pins.h"  // for NUM_LEDS, LED_STRIP_F, LED_STRIP_R
 #include <Arduino.h>  // for delay()
 
 // Constructor: initializes member variables
@@ -23,8 +22,8 @@ void LedController::setObstacleDetected(bool state) {
 void LedController::initialStartup() {
     // Turn both strips bright white
     for (int i = 0; i < numLeds; i++) {
-        frontStrip.setPixelColor(i, frontStrip.Color(255, 255, 255));
-        backStrip.setPixelColor(i, backStrip.Color(255, 255, 255));
+        frontStrip.setPixelColor(i, frontStrip.Color(WHITE));
+        backStrip.setPixelColor(i, backStrip.Color(WHITE));
     }
     frontStrip.show();
     backStrip.show();
@@ -33,10 +32,10 @@ void LedController::initialStartup() {
     // Cascade blue inward
     for (int offset = 0; offset < numLeds / 2; offset++) {
         for (int i = 0; i <= offset; i++) {
-            frontStrip.setPixelColor(i, frontStrip.Color(0, 0, 255));
-            frontStrip.setPixelColor(numLeds - 1 - i, frontStrip.Color(0, 0, 255));
-            backStrip.setPixelColor(i, backStrip.Color(0, 0, 255));
-            backStrip.setPixelColor(numLeds - 1 - i, backStrip.Color(0, 0, 255));
+            frontStrip.setPixelColor(i, frontStrip.Color(BLUE));
+            frontStrip.setPixelColor(numLeds - 1 - i, frontStrip.Color(BLUE));
+            backStrip.setPixelColor(i, backStrip.Color(BLUE));
+            backStrip.setPixelColor(numLeds - 1 - i, backStrip.Color(BLUE));
         }
         frontStrip.show();
         backStrip.show();
@@ -47,11 +46,11 @@ void LedController::initialStartup() {
 void LedController::normalOperation() {
     for (int i = 0; i < numLeds; i++) {
         if (i < 5 || i >= numLeds - 5) {
-            frontStrip.setPixelColor(i, frontStrip.Color(255, 255, 255));
-            backStrip.setPixelColor(i, backStrip.Color(255, 255, 255));
+            frontStrip.setPixelColor(i, frontStrip.Color(WHITE));
+            backStrip.setPixelColor(i, backStrip.Color(WHITE));
         } else {
-            frontStrip.setPixelColor(i, frontStrip.Color(0, 0, 255));
-            backStrip.setPixelColor(i, backStrip.Color(255, 0, 0));
+            frontStrip.setPixelColor(i, frontStrip.Color(BLUE));
+            backStrip.setPixelColor(i, backStrip.Color(BLUE));
         }
     }
     frontStrip.show();
@@ -59,40 +58,29 @@ void LedController::normalOperation() {
 }
 
 void LedController::handleObstacle() {
-    for (int i = 0; i < numLeds; i++) {
-        if (i < 5 || i >= numLeds - 5) {
-            frontStrip.setPixelColor(i, frontStrip.Color(255, 255, 0));
-            backStrip.setPixelColor(i, backStrip.Color(255, 255, 0));
-        } else {
-            frontStrip.setPixelColor(i, frontStrip.Color(255, 0, 0));
-            backStrip.setPixelColor(i, backStrip.Color(255, 0, 0));
-        }
-    }
-    frontStrip.show();
-    backStrip.show();
+    static int brightness = 0;
+    static int delta = 5;
+    static unsigned long lastUpdate = 0;
 
-    // Smooth yellow breathing
-    for (int b = 0; b <= 255; b += 5) {
+    if (millis() - lastUpdate > 30) {
+        lastUpdate = millis();
+        brightness += delta;
+        if (brightness >= 255 || brightness <= 0) delta = -delta;
+
         for (int i = 0; i < numLeds; i++) {
+            // Yellow edges with breathing animation
             if (i < 5 || i >= numLeds - 5) {
-                frontStrip.setPixelColor(i, frontStrip.Color(b, b, 0));
-                backStrip.setPixelColor(i, backStrip.Color(b, b, 0));
+                frontStrip.setPixelColor(i, frontStrip.Color(brightness, brightness, 0));
+                backStrip.setPixelColor(i, backStrip.Color(brightness, brightness, 0));
+            } 
+            // Middle section stays solid red
+            else {
+                frontStrip.setPixelColor(i, frontStrip.Color(255, 0, 0));
+                backStrip.setPixelColor(i, backStrip.Color(255, 0, 0));
             }
         }
-        frontStrip.show();
-        backStrip.show();
-        delay(30);
-    }
 
-    for (int b = 255; b >= 0; b -= 5) {
-        for (int i = 0; i < numLeds; i++) {
-            if (i < 5 || i >= numLeds - 5) {
-                frontStrip.setPixelColor(i, frontStrip.Color(b, b, 0));
-                backStrip.setPixelColor(i, backStrip.Color(b, b, 0));
-            }
-        }
         frontStrip.show();
         backStrip.show();
-        delay(30);
     }
 }

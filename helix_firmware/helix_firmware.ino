@@ -1,48 +1,76 @@
 #include <Arduino.h>
 #include "Odometry.h"
+#include "MotorDriver.h"
+#include "LEDs.h"
 #include "pins.h"
-#include "uart.h"
 
 
-// TEST MESSAGE //
+Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, WHEEL_DIAMETER, COUNTS_PER_REV, 1);   // wheel diameter = 160 mm
+Odometry rightOdom(RIGHT_ENC_A, RIGHT_ENC_B, WHEEL_DIAMETER, COUNTS_PER_REV, -1);
 
-// Create odometry objects
-Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, 0.160, MOTOR_CPR*GEAR_RATIO);   // wheel diameter = 96 mm
-//Odometry rightOdom(RIGHT_ENC_A, RIGHT_ENC_B, 0.096, 1440);
+MotorDriver motorL(BTS7960_1_R_PWM, BTS7960_1_L_PWM, BTS7960_1_R_EN, BTS7960_1_L_EN);
+MotorDriver motorR(BTS7960_2_R_PWM, BTS7960_2_L_PWM, BTS7960_2_R_EN, BTS7960_2_L_EN);
 
-// --- ISR handlers ---
-void leftEncoderISR() {
-    bool A = digitalRead(LEFT_ENC_A);
-    bool B = digitalRead(LEFT_ENC_B);
-    bool direction = (A == B);  // Basic quadrature direction rule
-    leftOdom.updateTicks(direction);
+LedController ledStrips(NUM_LEDS, LED_STRIP_F, LED_STRIP_R);
+
+// E-Stop Stuff
+bool estopActive = false;
+int estop = E_STOP;
+
+void estop_press(void){
+  estopActive = (digitalRead(estop) == HIGH);
 }
-
-// void rightEncoderISR() {
-//     bool A = digitalRead(RIGHT_ENC_A);
-//     bool B = digitalRead(RIGHT_ENC_B);
-//     bool direction = (A == B);
-//     rightOdom.updateTicks(direction);
-// }
 
 // --- Setup ---
 void setup() {
     Serial.begin(115200);
-    delay(1000);
-    Serial.println("==== ODOMETRY TEST START ====");
+    delay(100);
+
+    // E-STOP //
+    pinMode(estop,INPUT_PULLUP);
+    attachInterrupt(estop, estop_press, CHANGE);
+
+    // Encoders //
+    // MAYBE DO THIS IN ODOM FILES?
+    attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A), leftOdom.leftEncoderISR, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(LEFT_ENC_B), leftOdom.leftEncoderISR, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_A), rightOdom.rightEncoderISR, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_B), rightOdom.rightEncoderISR, CHANGE);
 
     leftOdom.begin();
-    //rightOdom.begin();
+    rightOdom.begin();
 
-    attachInterrupt(digitalPinToInterrupt(LEFT_ENC_A), leftEncoderISR, CHANGE);     // NEED TO FIX! ATTACH FOR LEFT_ENC_B as welll
-    //attachInterrupt(digitalPinToInterrupt(RIGHT_ENC_A), rightEncoderISR, CHANGE);
+    // Motors Initialization//
+    motorL.begin();
+    motorL.enable();
+    motorR.begin();
+    motorR.enable();
 
+    // LED Strips //
+    ledStrips.begin();
+    ledStrips.initialStartup();
+    ledStrips.normalOperation();
+
+    Serial.println("==== ODOMETRY TEST START ====");
     Serial.println("Encoders ready. Rotate wheels or run motors.");
     Serial.println();
+
+    motorL.setSpeed(80);
+    motorR.setSpeed(-80);
 }
 
 // --- Loop ---
 void loop() {
+
+//////// Single-Wheel Rotation Test ///////////
+    // if(leftOdom.getTicks() > 1440){
+    //     motorL.disable();
+    // }
+    // else if(rightOdom.getTicks() > 1440){
+    //     motorR.disable();
+    // }
+///////////////////////////////////////////////
+
     static unsigned long lastTime = millis();
     unsigned long now = millis();
 
@@ -52,32 +80,49 @@ void loop() {
 
         // 1. Distance test
         float leftDist = leftOdom.getDistance();
-        //float rightDist = rightOdom.getDistance();
+        float rightDist = rightOdom.getDistance();
 
         // 2. Velocity tests
         float leftAngVel = leftOdom.getVelocity(dt);
-        //float rightAngVel = rightOdom.getVelocity(dt);
+        float rightAngVel = rightOdom.getVelocity(dt);
+
         float leftLinVel = leftOdom.getLinearVelocity(dt);
-        //float rightLinVel = rightOdom.getLinearVelocity(dt);
+        float rightLinVel = rightOdom.getLinearVelocity(dt);
 
         // 3. Print results
         Serial.println("------ Encoder Report ------");
         Serial.print("Ticks [L,R]: ");
         Serial.print(leftOdom.getTicks()); Serial.print(", ");
-        //Serial.println(rightOdom.getTicks());
-        delay(100);
+        Serial.println(rightOdom.getTicks());
+
         Serial.print("Distance [m] [L,R]: ");
         Serial.print(leftDist, 5); Serial.print(", ");
-        //Serial.println(rightDist, 5);
-        delay(100);
+        Serial.println(rightDist, 5);
+
         Serial.print("Angular Vel [rad/s] [L,R]: ");
         Serial.print(leftAngVel, 3); Serial.print(", ");
-        //Serial.println(rightAngVel, 3);
-        delay(100);
+        Serial.println(rightAngVel, 3);
+
         Serial.print("Linear Vel [m/s] [L,R]: ");
         Serial.print(leftLinVel, 3); Serial.print(", ");
-        //Serial.println(rightLinVel, 3);
-        delay(100);
+        Serial.println(rightLinVel, 3);
+
         Serial.println("-----------------------------\n");
+    }
+
+    if(estopActive == true){
+        motorL.disable();
+        motorR.disable();
+
+        while(estopActive){
+            ledStrips.handleObstacle();
+        }
+
+        motorL.enable();
+        motorR.enable();
+        motorL.setSpeed(50);
+        motorR.setSpeed(-50);
+
+        ledStrips.normalOperation();
     }
 }

@@ -1,15 +1,15 @@
 
 #include "MotorDriver.h"
 
-MotorDriver::MotorDriver(uint8_t rpwmPin, uint8_t lpwmPin, uint8_t renPin, uint8_t lenPin, uint8_t isPin)
-: _rpwm(rpwmPin), _lpwm(lpwmPin), _ren(renPin), _len(lenPin), _is(isPin), _enabled(false) {}
+MotorDriver::MotorDriver(uint8_t rpwmPin, uint8_t lpwmPin, uint8_t renPin, uint8_t lenPin)
+: _rpwm(rpwmPin), _lpwm(lpwmPin), _ren(renPin), _len(lenPin), /*_is(isPin)*/_enabled(false) {}
 
 void MotorDriver::begin(){
-    pinMode(_rpwm, OUTPUT);
+    pinMode(_rpwm, OUTPUT); 
     pinMode(_lpwm, OUTPUT);
     pinMode(_ren, OUTPUT);
     pinMode(_len, OUTPUT);
-    pinMode(_is, INPUT);
+    //pinMode(_is, INPUT);  //  For current sensing - not gonna use just yet
 }
 
 void MotorDriver::enable(){
@@ -26,25 +26,34 @@ void MotorDriver::disable(){
     _enabled = false;
 }
 
-void MotorDriver::setSpeed(uint16_t speed){
+bool MotorDriver::enabled_getter(void){
+    return _enabled;
+}
+
+void MotorDriver::enabled_setter(bool state){
+    _enabled = state;
+}
+
+// NEED TO REVIZE TO TAKE A CMD_VEL INPUT, NOT JUST SPEED
+void MotorDriver::setSpeed(int16_t speed){
     if (!_enabled)
         return;
     
     speed = constrain(speed, -255, 255); //NEED TO FIND WHAT LIBRARY THIS IS FROM
 
     if (speed > 0){
-        analogWrite(_rpwm, speed);
-        analogWrite(_lpwm, 0);
-    } else if (speed < 0){
         analogWrite(_rpwm, 0);
-        analogWrite(_lpwm, -(speed));
+        analogWrite(_lpwm, speed);
+    } else if (speed < 0){
+        analogWrite(_rpwm,-(speed));
+        analogWrite(_lpwm, 0);
     } else {
         analogWrite(_rpwm, 0);
         analogWrite(_lpwm, 0);
     }
 }
 
-int MotorDriver::readCurrent(){
-    int adcVal = analogRead(_is);
-    return adcVal;
-}
+// int MotorDriver::readCurrent(){
+//     int adcVal = analogRead(_is);
+//     return adcVal;
+// }
