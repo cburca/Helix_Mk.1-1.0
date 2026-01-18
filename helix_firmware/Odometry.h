@@ -33,7 +33,7 @@ public:
 
     void begin();               // Set up interrupts or pin modes
     float getVelocity(float dt); // Returns angular velocity (rad/s)
-    float getLinearVelocity(float dt); // Returns linear velocity (m/s)
+    float getLinearVelocity(); // Returns linear velocity (m/s)
     float getDistance();        // Returns total distance traveled (m)
     void update();          // Optional for rn, use later for pre-calcualting & storing pose estimates & velocities
     void reset();               // Reset tick counter

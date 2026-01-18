@@ -12,6 +12,7 @@ void Odometry::begin() {
     pinMode(_encA, INPUT_PULLUP);
     pinMode(_encB, INPUT_PULLUP);
     _lastState = digitalRead(_encA);
+    _lastUpdateTime = millis();
 }
 
 // --- Distance Calculation ---
@@ -34,7 +35,10 @@ float Odometry::getVelocity(float dt) {
 }
 
 // --- Get Linear Velocity (m/s) ---
-float Odometry::getLinearVelocity(float dt) {
+
+/* ONLY WORKS WHEN COMPUTED AFTER getVelocity FUNCTION - NOT TIME DEPENDENT*/
+
+float Odometry::getLinearVelocity() {
     float linearVel = _angularVelocity * (_wheelDiameter / 2); // m/s
     return linearVel;
 }
@@ -53,6 +57,7 @@ void Odometry::update() {
 
     long currentTicks = _ticks;
     long deltaTicks = currentTicks - _prevTicks;
+    
     _prevTicks = currentTicks;
 
     // Calculate and store velocity for later retrieval
@@ -80,47 +85,49 @@ A	B	A << 1	OR B	currentAB
 */
 
 void Odometry::leftEncoderISR(){
-    static uint8_t lastAB = 0b00;
+
+    static uint8_t lastAB_L = 0b00;
 
     uint8_t A = digitalRead(LEFT_ENC_A);
     uint8_t B = digitalRead(LEFT_ENC_B);
     uint8_t currentAB = (A << 1) | B;
     int8_t delta = 0;
 
-    if ((lastAB == 0b00 && currentAB == 0b01) ||
-        (lastAB == 0b01 && currentAB == 0b11) ||
-        (lastAB == 0b11 && currentAB == 0b10) ||
-        (lastAB == 0b10 && currentAB == 0b00))
+    if ((lastAB_L == 0b00 && currentAB == 0b01) ||
+        (lastAB_L == 0b01 && currentAB == 0b11) ||
+        (lastAB_L == 0b11 && currentAB == 0b10) ||
+        (lastAB_L == 0b10 && currentAB == 0b00))
         delta = +1;
-    else if ((lastAB == 0b00 && currentAB == 0b10) ||
-             (lastAB == 0b10 && currentAB == 0b11) ||
-             (lastAB == 0b11 && currentAB == 0b01) ||
-             (lastAB == 0b01 && currentAB == 0b00))
+    else if ((lastAB_L == 0b00 && currentAB == 0b10) ||
+             (lastAB_L == 0b10 && currentAB == 0b11) ||
+             (lastAB_L == 0b11 && currentAB == 0b01) ||
+             (lastAB_L == 0b01 && currentAB == 0b00))
         delta = -1;
 
     leftOdom.updateTicks(delta);
-    lastAB = currentAB;
+    lastAB_L = currentAB;
 }
 
 void Odometry::rightEncoderISR(){
-    static uint8_t lastAB = 0;
+
+    static uint8_t lastAB_R = 0;
 
     uint8_t A = digitalRead(RIGHT_ENC_A);
     uint8_t B = digitalRead(RIGHT_ENC_B);
     uint8_t currentAB = (A << 1) | B;
     int8_t delta = 0;
 
-    if ((lastAB == 0b00 && currentAB == 0b01) ||
-        (lastAB == 0b01 && currentAB == 0b11) ||
-        (lastAB == 0b11 && currentAB == 0b10) ||
-        (lastAB == 0b10 && currentAB == 0b00))
+    if ((lastAB_R == 0b00 && currentAB == 0b01) ||
+        (lastAB_R == 0b01 && currentAB == 0b11) ||
+        (lastAB_R == 0b11 && currentAB == 0b10) ||
+        (lastAB_R == 0b10 && currentAB == 0b00))
         delta = +1;
-    else if ((lastAB == 0b00 && currentAB == 0b10) ||
-             (lastAB == 0b10 && currentAB == 0b11) ||
-             (lastAB == 0b11 && currentAB == 0b01) ||
-             (lastAB == 0b01 && currentAB == 0b00))
+    else if ((lastAB_R == 0b00 && currentAB == 0b10) ||
+             (lastAB_R == 0b10 && currentAB == 0b11) ||
+             (lastAB_R == 0b11 && currentAB == 0b01) ||
+             (lastAB_R == 0b01 && currentAB == 0b00))
         delta = -1;
 
     rightOdom.updateTicks(delta);
-    lastAB = currentAB;
+    lastAB_R = currentAB;
 }

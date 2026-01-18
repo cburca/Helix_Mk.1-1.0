@@ -3,6 +3,7 @@
 #include "MotorDriver.h"
 #include "LEDs.h"
 #include "pins.h"
+#include "PIDController.h"
 
 
 Odometry leftOdom(LEFT_ENC_A, LEFT_ENC_B, WHEEL_DIAMETER, COUNTS_PER_REV, 1);   // wheel diameter = 160 mm
@@ -10,6 +11,11 @@ Odometry rightOdom(RIGHT_ENC_A, RIGHT_ENC_B, WHEEL_DIAMETER, COUNTS_PER_REV, -1)
 
 MotorDriver motorL(BTS7960_1_R_PWM, BTS7960_1_L_PWM, BTS7960_1_R_EN, BTS7960_1_L_EN);
 MotorDriver motorR(BTS7960_2_R_PWM, BTS7960_2_L_PWM, BTS7960_2_R_EN, BTS7960_2_L_EN);
+
+// Instantiate PID control objects (left/right wheels) after setting up odom & motors
+WheelController leftPID(leftOdom, motorL);
+WheelController rightPID(rightOdom, motorR);
+
 
 LedController ledStrips(NUM_LEDS, LED_STRIP_F, LED_STRIP_R);
 
@@ -39,12 +45,18 @@ void setup() {
 
     leftOdom.begin();
     rightOdom.begin();
+    delay(10);
 
-    // Motors Initialization//
+    // Motors Init. //
     motorL.begin();
     motorL.enable();
     motorR.begin();
     motorR.enable();
+
+    // PID Control Init. //
+    leftPID.begin();
+    rightPID.begin();
+    delay(10);
 
     // LED Strips //
     ledStrips.begin();
@@ -55,8 +67,13 @@ void setup() {
     Serial.println("Encoders ready. Rotate wheels or run motors.");
     Serial.println();
 
-    motorL.setSpeed(80);
-    motorR.setSpeed(-80);
+    // OPEN-LOOP MOTOR CONTROL TESTING //
+    // motorL.setSpeed(80);
+    // motorR.setSpeed(80);
+
+    // // CLOSED-LOOP MOTOR CONTROL TESTING //
+    leftPID.setTargetVelocity(0.5);
+    rightPID.setTargetVelocity(0.5);
 }
 
 // --- Loop ---
@@ -70,24 +87,33 @@ void loop() {
     //     motorR.disable();
     // }
 ///////////////////////////////////////////////
-
-    static unsigned long lastTime = millis();
     unsigned long now = millis();
+    static unsigned long lastDiag = millis();
+    static unsigned long lastPID = millis();
 
-    if (now - lastTime >= 500) { // every 0.5 seconds
-        float dt = (now - lastTime) / 1000.0f; // convert to seconds
-        lastTime = now;
+    if (now - lastPID >= 10) {  // 100 Hz
+        lastPID = now;
 
-        // 1. Distance test
+        leftOdom.update();
+        rightOdom.update();
+
+        leftPID.update();
+        rightPID.update();
+    }
+
+    if (now - lastDiag >= 300) { // every 0.3 seconds
+        lastDiag = now;
+
+        // // 1. Distance test
         float leftDist = leftOdom.getDistance();
         float rightDist = rightOdom.getDistance();
 
         // 2. Velocity tests
-        float leftAngVel = leftOdom.getVelocity(dt);
-        float rightAngVel = rightOdom.getVelocity(dt);
+        float leftAngVel = leftOdom.getStoredAngularVelocity();
+        float rightAngVel = rightOdom.getStoredAngularVelocity();
 
-        float leftLinVel = leftOdom.getLinearVelocity(dt);
-        float rightLinVel = rightOdom.getLinearVelocity(dt);
+        float leftLinVel = leftOdom.getStoredLinearVelocity();
+        float rightLinVel = rightOdom.getStoredLinearVelocity();
 
         // 3. Print results
         Serial.println("------ Encoder Report ------");
@@ -114,14 +140,19 @@ void loop() {
         motorL.disable();
         motorR.disable();
 
+        leftPID.disablePID();
+        rightPID.disablePID();
+
         while(estopActive){
             ledStrips.handleObstacle();
         }
 
         motorL.enable();
         motorR.enable();
-        motorL.setSpeed(50);
-        motorR.setSpeed(-50);
+        // motorL.setSpeed(50);     // <--- Open Loop
+        // motorR.setSpeed(-50);
+        leftPID.enablePID();        // <--- Closed Loop - need to make sure no integral windup
+        rightPID.enablePID();
 
         ledStrips.normalOperation();
     }
