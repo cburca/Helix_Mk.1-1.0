@@ -71,9 +71,9 @@ void setup() {
     // motorL.setSpeed(80);
     // motorR.setSpeed(80);
 
-    // // CLOSED-LOOP MOTOR CONTROL TESTING //
-    leftPID.setTargetVelocity(0.5);
-    rightPID.setTargetVelocity(0.5);
+    // // // CLOSED-LOOP MOTOR CONTROL TESTING //
+    leftPID.setTargetVelocity(0.3);
+    rightPID.setTargetVelocity(0.3);
 }
 
 // --- Loop ---
@@ -91,31 +91,41 @@ void loop() {
     static unsigned long lastDiag = millis();
     static unsigned long lastPID = millis();
 
-    if (now - lastPID >= 10) {  // 100 Hz
+    if (now - lastPID >= 100) {  // 100 Hz
+        float dt = (now - lastPID) / 1000.0f;
         lastPID = now;
 
         leftOdom.update();
         rightOdom.update();
 
-        leftPID.update();
-        rightPID.update();
+        leftPID.update(dt);
+        rightPID.update(dt);
+
+        // float leftLinVel = leftOdom.getStoredLinearVelocity();
+        // float rightLinVel = rightOdom.getStoredLinearVelocity();
+
+        // Serial.println("------ Encoder Report ------");
+        // Serial.print("Linear Vel [m/s] [L,R]: ");
+        // Serial.print(leftLinVel, 3); Serial.print(", ");
+        // Serial.println(rightLinVel, 3);
+        // Serial.println("-----------------------------\n");
     }
 
     if (now - lastDiag >= 300) { // every 0.3 seconds
         lastDiag = now;
 
-        // // 1. Distance test
+    //     // // 1. Distance test
         float leftDist = leftOdom.getDistance();
         float rightDist = rightOdom.getDistance();
 
-        // 2. Velocity tests
+    //     // // 2. Velocity tests
         float leftAngVel = leftOdom.getStoredAngularVelocity();
         float rightAngVel = rightOdom.getStoredAngularVelocity();
 
         float leftLinVel = leftOdom.getStoredLinearVelocity();
         float rightLinVel = rightOdom.getStoredLinearVelocity();
 
-        // 3. Print results
+    //     // 3. Print results
         Serial.println("------ Encoder Report ------");
         Serial.print("Ticks [L,R]: ");
         Serial.print(leftOdom.getTicks()); Serial.print(", ");
