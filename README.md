@@ -1,4 +1,4 @@
-## Robot Package Template
+## Robot Simulation Package Template - Tutorial
 
 This is a GitHub template. You can make your own copy by clicking the green "Use this template" button.
 
