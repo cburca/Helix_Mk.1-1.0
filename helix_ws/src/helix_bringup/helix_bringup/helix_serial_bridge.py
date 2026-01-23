@@ -6,7 +6,7 @@ import serial
 import struct
 import time
 
-# Packet Constants matching your C++ header
+# Packet Constants
 SYNC_1 = 0xAA
 SYNC_2 = 0x55
 PKT_ODOM = 0x01
@@ -16,7 +16,7 @@ class HelixSerialBridge(Node):
     def __init__(self):
         super().__init__('helix_serial_bridge')
         
-        # 1. Setup Serial Connection (Adjust '/dev/ttyACM0' for Teensy)
+        # 1. Setup Serial Connection
         try:
             self.ser = serial.Serial('/dev/ttyACM0', 115200, timeout=0.1)
             self.get_logger().info(f"Connected to Teensy on {self.ser.port}")
@@ -41,7 +41,7 @@ class HelixSerialBridge(Node):
 
     def cmd_vel_callback(self, msg: Twist):
         """Converts ROS Twist to Binary Packet and sends to Teensy"""
-        # Pack float linear.x and angular.z into 8 bytes (little-endian)
+        # Pack float linear.x and angular.z into 8 bytes (little-endian) --> got from chatGPT
         payload = struct.pack('<ff', msg.linear.x, msg.angular.z)
         self.send_packet(PKT_CMDVEL, payload)
 
@@ -63,7 +63,7 @@ class HelixSerialBridge(Node):
             self.process_buffer()
 
     def process_buffer(self):
-        """Simple state-machine-like parser using buffer finding"""
+        """State Machine"""
         while len(self.buffer) >= 5: # Min size: Sync1+Sync2+Type+Len+CRC
             # Find Sync bytes
             try:
@@ -111,7 +111,7 @@ class HelixSerialBridge(Node):
             self.publish_odom(payload)
 
     def publish_odom(self, payload):
-        # Expecting payload from Teensy as defined in your .h comments:
+        # Expected payload:
         # <timestamp (4)><left_ticks (4)><right_ticks (4)><lin_vel (4)><ang_vel (4)> = 20 bytes
         if len(payload) == 20:
             # Unpack: I=uint32 (time), i=int32 (ticks), f=float (vels)
@@ -125,8 +125,7 @@ class HelixSerialBridge(Node):
             odom_msg.twist.twist.linear.x = lin_vel
             odom_msg.twist.twist.angular.z = ang_vel
             
-            # Note: You need to calculate position (x, y, theta) on the Teensy 
-            # or here in Python based on velocities/ticks to fill odom_msg.pose.
+            # Calculate pose (x, y, theta) here to fill odom_msg.pose.
             
             self.odom_pub.publish(odom_msg)
 
