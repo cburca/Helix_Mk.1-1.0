@@ -7,7 +7,7 @@
 #include "uart.h"
 
 
-#define TRACK_WIDTH        0.35f   // Meters (Distance between wheels)
+#define TRACK_WIDTH        0.515f   // Meters (Distance between wheels), 51.5 cm
 #define PID_INTERVAL_MS    100      // 100Hz Control Loop
 #define DIAG_INTERVAL_MS   300      // 100Hz Control Loop
 #define ODOM_INTERVAL_MS   50      // 20Hz Telemetry Loop
@@ -58,8 +58,8 @@ void handleCmdVel(uint8_t *data) {
   float vel_r = lin_x + (ang_z * (TRACK_WIDTH / 2.0f));
 
   // 3. Set PID Setpoints
-  pidLeft.setTargetVelocity(vel_l);
-  pidRight.setTargetVelocity(vel_r);
+  leftPID.setTargetVelocity(vel_l);
+  rightPID.setTargetVelocity(vel_r);
 }
 
 void sendOdometry() {
@@ -202,7 +202,7 @@ void loop() {
 
     // ODOMETRY DIAGNOSTIC STATS
     if (now - last_diag_time >= DIAG_INTERVAL_MS) { // every 0.3 seconds
-        lastDiag = now;
+        last_diag_time = now;
 
     //     // // 1. Distance test
         float leftDist = leftOdom.getDistance();
