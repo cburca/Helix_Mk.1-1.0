@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            "helix_serial_bridge = helix_bringup.helix_serial_bridge:main"
         ],
     },
 )
